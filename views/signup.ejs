@@ -15,7 +15,9 @@
         <label for="password">Mot de passe:</label>
         <input type="password" id="password" name="password" required>
         <button type="submit">S'inscrire</button>
-        <p id="message"></p>
+        <% if (typeof message !== 'undefined' && message) { %>
+            <p id="message"><%= message %></p>
+        <% } %>
     </form>
 </div>
 </body>

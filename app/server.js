@@ -15,23 +15,23 @@ app.use(express.static(path.join(__dirname, '../public')));
 // Middleware pour récupérer les données du formulaire
 app.use(express.urlencoded({ extended: true }));
 
+// Page d'accueil
+app.get('/', (req, res) => {
+    res.render('index');
+});
+
 app.get('/signup', (req, res) => {
     res.render('signup');
 });
 
-// tout les autres routes qui ne sont pas défini
+// toutes les autres routes qui ne sont pas défini
 app.get('*', (req, res) => {
     res.send('Page introuvable');
 });
 
 app.post('/signup', (req, res) => {
     const { username, password } = req.body;
-
-    //Affiche dans la console les données du formulaire
-    console.log(`Nom d'utilisateur: ${username}`);
-    // Logique pour gérer les données d'inscription
-    res.send('Inscription réussie!');
-    res.render('signupOK');
+    res.render('success');
 });
 
 // Démarrer le serveur
