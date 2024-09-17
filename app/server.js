@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
-const authRoutes = require('../routes/auth'); // Adjusted path if necessary
+const authenticate = require('../routes/auth');
+const cookieParser = require('cookie-parser');
 const server = express();
 
 // Configuration du moteur de rendu
@@ -13,13 +14,19 @@ server.use(express.static(path.join(__dirname, '../public')));
 // Middleware pour récupérer les données du formulaire
 server.use(express.urlencoded({ extended: false }));
 
+// Middleware pour récupérer les données en JSON
+server.use(express.json());
 
-server.get('/', (req, res) => {
+// Middleware pour gérer les cookies
+server.use(cookieParser());
+
+
+// Middleware pour gérer l'authentification
+server.use(authenticate);
+
+server.get('/',authenticate,(req, res) => {
     res.render('index');
 });
-
-server.use(authRoutes);
-
 
 server.use((req, res) => {
     res.status(404).send('Page introuvable');

@@ -33,21 +33,29 @@ class User {
         try {
             const user = await User.findOne(username);
             if (!user) {
-                return res.status(401).json({message: 'Paire login/mot de passe incorrecte 1'});
+                return res.status(401).json({message: 'Paire login/mot de passe incorrecte'});
             }
             const valid = await bcrypt.compare(password, user.motDePasse);
             if (!valid) {
-                return res.status(401).json({message: 'Paire login/mot de passe incorrecte 2'});
+                return res.status(401).json({message: 'Paire login/mot de passe incorrecte'});
             }
-            console.log('Utilisateur connecté:', user.nom);
-            res.status(200).json({
-                user_name: user.nom,
-                token: jwt.sign(
-                    { username: user.nom },
-                    'RANDOM_TOKEN_SECRET',
-                    { expiresIn: '24h' }
-                )
+            const token = jwt.sign(
+                { username: user.nom },
+                'RANDOM_TOKEN_SECRET',
+                { expiresIn: '24h' }
+            );
+
+            res.cookie('jwt', token, {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'Strict'
             });
+
+            res.redirect('/');
+
+            console.log('Utilisateur connecté:', user.nom);
+
+
         } catch (error) {
             res.status(500).json({error});
         }
