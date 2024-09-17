@@ -39,6 +39,15 @@ router.post('/signup', async (req, res) => {
     await User.save(username, password, res)
 });
 
+router.post('/check-username', async (req, res) => {
+    const { username } = req.body;
+    const user = await User.findOne(username);
+    if (user) {
+        return res.status(400).send('Nom d\'utilisateur déjà pris');
+    }
+    res.status(200).send('Nom d\'utilisateur disponible');
+});
+
 router.get('/login', (req, res) => {
     res.render('login');
 });

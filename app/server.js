@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const authenticate = require('../routes/auth');
+const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const server = express();
 
@@ -24,8 +25,18 @@ server.use(cookieParser());
 // Middleware pour gérer l'authentification
 server.use(authenticate);
 
-server.get('/',authenticate,(req, res) => {
-    res.render('index');
+server.get('/', (req, res) => {
+    const token = req.cookies.jwt;
+    if (token) {
+        jwt.verify(token, 'RANDOM_TOKEN_SECRET', (err, user) => {
+            if (err) {
+                return res.render('index', { authenticated: false });
+            }
+            return res.render('index', { authenticated: true, user: user.username });
+        });
+    } else {
+        res.render('index', { authenticated: false });
+    }
 });
 
 server.use((req, res) => {

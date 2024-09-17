@@ -4,33 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inscription</title>
-    <link rel="stylesheet" href="styles.css">
-    <script>
-        //fonction pour verifier si les mots de passe correspondent
-        function validateForm() {
-            const password = document.getElementById('password').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-            if (password !== confirmPassword) {
-                document.getElementById('message').innerText = 'Les mots de passe ne correspondent pas';
-                return false;
-            }
-            return true;
-        }
-    </script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
-<div class="container">
-    <form action="/signup" method="POST" onsubmit="return validateForm()">
-        <h2>Inscription</h2>
-        <label for="username">Nom d'utilisateur:</label>
-        <input type="text" id="username" name="username" required>
-        <label for="password">Mot de passe:</label>
-        <input type="password" id="password" name="password" required>
-        <label for="confirmPassword">Confirmez le mot de passe:</label>
-        <input type="password" id="confirmPassword" name="confirmPassword" required>
-        <button type="submit">S'inscrire</button>
-        <p id="message"></p>
-    </form>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Inscription</h2>
+                </div>
+                <div class="card-body">
+                    <form id="signupForm" action="/signup" method="POST">
+                        <div class="form-group">
+                            <label for="username">Nom d'utilisateur:</label>
+                            <input type="text" id="username" name="username" class="form-control" required>
+                            <div id="usernameError" class="alert alert-danger mt-3" style="display: none;" role="alert">
+                                Nom d'utilisateur déjà pris.
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Mot de passe:</label>
+                            <input type="password" id="password" name="password" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirmer le mot de passe:</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" required>
+                        </div>
+                        <div id="passwordError" class="alert alert-danger mt-3" style="display: none;" role="alert">
+                            Les mots de passe ne correspondent pas.
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">S'inscrire</button>
+                        <% if (typeof errorMessage !== 'undefined') { %>
+                            <div class="alert alert-danger mt-3" role="alert">
+                                <%= errorMessage %>
+                            </div>
+                        <% } %>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    document.getElementById('username').addEventListener('input', function() {
+        var username = this.value;
+        if (username.length > 0) {
+            fetch('/check-username', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username: username })
+            })
+                .then(response => {
+                    if (response.status === 400) {
+                        document.getElementById('usernameError').style.display = 'block';
+                    } else {
+                        document.getElementById('usernameError').style.display = 'none';
+                    }
+                });
+        } else {
+            document.getElementById('usernameError').style.display = 'none';
+        }
+    });
+
+    document.getElementById('signupForm').addEventListener('submit', function(event) {
+        var password = document.getElementById('password').value;
+        var confirmPassword = document.getElementById('confirmPassword').value;
+        if (password !== confirmPassword) {
+            event.preventDefault();
+            document.getElementById('passwordError').style.display = 'block';
+        }
+    });
+</script>
 </body>
 </html>
