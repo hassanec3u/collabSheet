@@ -38,6 +38,9 @@
                             <div id="passwordError" class="alert alert-danger mt-3" style="display: none;" role="alert">
                                 Les mots de passe ne correspondent pas.
                             </div>
+                            <div id="passwordValidationError" class="alert alert-danger mt-3" style="display: none;" role="alert">
+                                Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.
+                            </div>
                             <button type="submit" class="btn btn-primary btn-block">S'inscrire</button>
                             <% if (typeof errorMessage !== 'undefined') { %>
                                 <div class="alert alert-danger mt-3" role="alert">
@@ -54,6 +57,7 @@
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 <script>
     document.getElementById('username').addEventListener('input', function () {
         var username = this.value;
@@ -80,9 +84,23 @@
     document.getElementById('signupForm').addEventListener('submit', function (event) {
         var password = document.getElementById('password').value;
         var confirmPassword = document.getElementById('confirmPassword').value;
+        var passwordValidationError = document.getElementById('passwordValidationError');
+        var passwordError = document.getElementById('passwordError');
+
+        var passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+
+        if (!passwordRegex.test(password)) {
+            event.preventDefault();
+            passwordValidationError.style.display = 'block';
+        } else {
+            passwordValidationError.style.display = 'none';
+        }
+
         if (password !== confirmPassword) {
             event.preventDefault();
-            document.getElementById('passwordError').style.display = 'block';
+            passwordError.style.display = 'block';
+        } else {
+            passwordError.style.display = 'none';
         }
     });
 </script>
