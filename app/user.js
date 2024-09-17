@@ -33,11 +33,11 @@ class User {
         try {
             const user = await User.findOne(username);
             if (!user) {
-                return res.status(401).json({message: 'Paire login/mot de passe incorrecte'});
+                return res.status(401).render('login', { errorMessage: 'Paire login/mot de passe incorrecte' });
             }
             const valid = await bcrypt.compare(password, user.motDePasse);
             if (!valid) {
-                return res.status(401).json({message: 'Paire login/mot de passe incorrecte'});
+                return res.status(401).render('login', { errorMessage: 'Paire login/mot de passe incorrecte' });
             }
             const token = jwt.sign(
                 { username: user.nom },
@@ -55,9 +55,8 @@ class User {
 
             console.log('Utilisateur connecté:', user.nom);
 
-
         } catch (error) {
-            res.status(500).json({error});
+            res.status(500).json({ error });
         }
     }
 

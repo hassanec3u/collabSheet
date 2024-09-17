@@ -6,9 +6,6 @@ const router = express.Router();
 const authenticate = (req, res, next) => {
     const token = req.cookies.jwt;
 
-
-    console.log('token',token);
-
     if (!token) {
         return res.status(401).send('Accès refusé 401, pas de token');
     }
@@ -21,6 +18,7 @@ const authenticate = (req, res, next) => {
         next();
     });
 };
+
 router.get('/signup', (req, res) => {
     res.render('signup');
 });
@@ -55,6 +53,12 @@ router.get('/login', (req, res) => {
 router.post('/login', async (req, res) => {
     const { username, password } = req.body;
     await User.login(username, password, res)
+});
+
+//logout
+router.get('/logout', (req, res) => {
+    res.clearCookie('jwt');
+    res.redirect('/login');
 });
 
 router.use(authenticate);
