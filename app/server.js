@@ -3,6 +3,7 @@ const path = require('path');
 const authenticate = require('../routes/auth');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+const mongoose = require('../config/mongoose');
 const server = express();
 
 // Configuration du moteur de rendu
@@ -21,10 +22,6 @@ server.use(express.json());
 // Middleware pour gérer les cookies
 server.use(cookieParser());
 
-
-// Middleware pour gérer l'authentification
-server.use(authenticate);
-
 server.get('/', (req, res) => {
     const token = req.cookies.jwt;
     if (token) {
@@ -37,6 +34,13 @@ server.get('/', (req, res) => {
     } else {
         res.render('index', { authenticated: false });
     }
+});
+
+// Middleware pour gérer l'authentification
+server.use(authenticate);
+
+server.get('/dashboard', authenticate, (req, res) => {
+    res.render('dashboard');
 });
 
 server.use((req, res) => {

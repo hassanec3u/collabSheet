@@ -1,8 +1,19 @@
-const bcrypt = require('bcrypt');
-const db = require('../config/db');
+const db = require('../config/mongoose');
 const jwt = require('jsonwebtoken');
 
-class User {
+const mongoose = require('../config/mongoose');
+const Schema = mongoose.Schema;
+
+const userSchema = new Schema({
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true }
+});
+
+const User = mongoose.model('user', userSchema);
+
+module.exports = User;
+
+/*class User {
     constructor(username, password) {
         this.username = username;
         this.password = password;
@@ -10,7 +21,8 @@ class User {
         this.sharedSheets = [];
     }
 
-    static async save(username, password, res) {
+
+   /!* static async save(username, password, res) {
         const saltRounds = 10;
         try {
             const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -76,8 +88,8 @@ class User {
         } catch (err) {
             throw err;
         }
-    }
+    }*!/
 
-}
+}*/
 
-module.exports = User;
+// module.exports = User;
