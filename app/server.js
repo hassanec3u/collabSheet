@@ -64,10 +64,21 @@ server.post('/sheet/save', authenticate, async (req, res) => {
     res.status(201).send('Sauvegarde réussie');
 });
 
+//ouvrir une feuille
+server.get('/sheet/:id', authenticate, async (req, res) => {
+    const sheet = await Sheet.findById(req.params.id);
+    if (!sheet) {
+        return res.status(404).send('Feuille introuvable');
+    }
+    res.render('sheet', {authenticated: true, sheet});
+});
+
+/*
 server.get('/sheet/load', authenticate, async (req, res) => {
     const sheets = await Sheet.find().populate('owner', 'username');
     res.json(sheets);
 });
+*/
 
 server.use((req, res) => {
     res.status(404).send('Page introuvable');
