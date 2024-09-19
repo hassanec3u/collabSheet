@@ -3,8 +3,12 @@ const path = require('path');
 const authenticate = require('../routes/auth');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
-const mongoose = require('../config/mongoose');
+const Sheet = require('../models/sheet');
+const User = require('../models/user');
 const server = express();
+
+// Import the mongoose configuration
+require('../config/mongoose');
 
 // Configuration du moteur de rendu
 server.set('view engine', 'ejs');
@@ -14,7 +18,7 @@ server.set('views', path.join(__dirname, '../views'));
 server.use(express.static(path.join(__dirname, '../public')));
 
 // Middleware pour récupérer les données du formulaire
-server.use(express.urlencoded({ extended: false }));
+server.use(express.urlencoded({extended: false}));
 
 // Middleware pour récupérer les données en JSON
 server.use(express.json());
@@ -27,20 +31,42 @@ server.get('/', (req, res) => {
     if (token) {
         jwt.verify(token, 'RANDOM_TOKEN_SECRET', (err, user) => {
             if (err) {
-                return res.render('index', { authenticated: false });
+                return res.render('index', {authenticated: false});
             }
-            return res.render('index', { authenticated: true, user: user.username });
+            return res.render('index', {authenticated: true, user: user.username});
         });
     } else {
-        res.render('index', { authenticated: false });
+        res.render('index', {authenticated: false});
     }
 });
 
 // Middleware pour gérer l'authentification
 server.use(authenticate);
 
-server.get('/dashboard', authenticate, (req, res) => {
-    res.render('dashboard');
+server.get('/dashboard', authenticate, async (req, res) => {
+    try {
+        const sheets = await Sheet.find({owner: req.user.username});
+        res.render('dashboard', {authenticated: true, sheets});
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Erreur lors de la récupération des feuilles');
+    }
+});
+
+server.get('/sheet', authenticate, (req, res) => {
+    res.render('sheet', {authenticated: true});
+});
+
+server.post('/sheet/save', authenticate, async (req, res) => {
+    const {sheet_name, data} = req.body;
+    const sheet = new Sheet({ owner: req.user.username, name: sheet_name, data });
+    await sheet.save();
+    res.status(201).send('Sauvegarde réussie');
+});
+
+server.get('/sheet/load', authenticate, async (req, res) => {
+    const sheets = await Sheet.find().populate('owner', 'username');
+    res.json(sheets);
 });
 
 server.use((req, res) => {

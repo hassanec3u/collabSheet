@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<%- include('partials/navbar') %>
+<div class="container-fluid mt-5">
+    <h1>Tableau de bord</h1>
+    <button class="btn btn-primary mb-3" id="createSheet">Créer une nouvelle feuille</button>
+    <ul class="list-group" id="sheetsList">
+        <% if (sheets && sheets.length > 0) { %>
+            <% sheets.forEach(sheet => { %>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <input type="text" class="form-control mr-3" value="<%= sheet.name %>" data-id="<%= sheet._id %>" readonly>
+                    <div>
+                        <button class="btn btn-danger deleteSheet">Supprimer</button>
+                    </div>
+                </li>
+            <% }) %>
+        <% } else { %>
+            <li class="list-group-item">Aucune feuille disponible</li>
+        <% } %>
+    </ul>
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+<script>
+    document.getElementById('createSheet').addEventListener('click', () => {
+        fetch('/sheet/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ sheet_name: 'Nouvelle Feuille', data: [] })
+        }).then(() => location.reload());
+    });
+
+    document.querySelectorAll('.deleteSheet').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const sheetId = event.target.getAttribute('data-id');
+            fetch(`/sheet/${sheetId}`, {
+                method: 'DELETE'
+            }).then(() => location.reload());
+        });
+    });
+
+    document.querySelectorAll('.editSheet').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const input = event.target.closest('li').querySelector('input');
+            if (input.readOnly) {
+                input.readOnly = false;
+                input.focus();
+                event.target.textContent = 'Enregistrer';
+            } else {
+                input.readOnly = true;
+                event.target.textContent = 'Modifier';
+                const sheetId = input.getAttribute('data-id');
+                const newName = input.value;
+                fetch(`/sheet/${sheetId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name: newName })
+                });
+            }
+        });
+    });
+</script>
