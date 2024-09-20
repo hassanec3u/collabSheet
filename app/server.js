@@ -73,6 +73,11 @@ server.get('/sheet/:id', authenticate, async (req, res) => {
     res.render('sheet', {authenticated: true, sheet});
 });
 
+//supprimer une feuille
+server.delete('/sheet/:id', authenticate, async (req, res) => {
+    await Sheet.findByIdAndDelete(req.params.id);
+    res.status(204).send('Feuille supprimée');});
+
 /*
 server.get('/sheet/load', authenticate, async (req, res) => {
     const sheets = await Sheet.find().populate('owner', 'username');
