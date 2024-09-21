@@ -31,7 +31,7 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 <script>
     document.getElementById('createSheet').addEventListener('click', () => {
-        fetch('/sheet/save', {
+        fetch('/sheet', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

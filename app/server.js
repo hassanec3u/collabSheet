@@ -53,15 +53,34 @@ server.get('/dashboard', authenticate, async (req, res) => {
     }
 });
 
-server.get('/sheet', authenticate, (req, res) => {
-    res.render('sheet', {authenticated: true});
+// Créer une feuille
+server.post('/sheet', authenticate, async (req, res) => {
+    try {
+        const name = req.body.sheet_name;
+        const data = req.body.data;
+        const newSheet = new Sheet({name, data, owner: req.user.username});
+        await newSheet.save();
+        res.status(201).send('Feuille créée');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Erreur lors de la création de la feuille');
+    }
 });
 
-server.post('/sheet/save', authenticate, async (req, res) => {
-    const {sheet_name, data} = req.body;
-    const sheet = new Sheet({ owner: req.user.username, name: sheet_name, data });
-    await sheet.save();
-    res.status(201).send('Sauvegarde réussie');
+// sauvegarder une feuille
+server.put('/sheet/:id', authenticate, async (req, res) => {
+    try {
+        const sheetId = req.body.sheetId;
+        const data = req.body.data;
+        const sheet = await Sheet.findByIdAndUpdate(sheetId, {data}, {new: true});
+        if (!sheet) {
+            return res.status(404).send('Feuille introuvable');
+        }
+        return res.status(200).send('Feuille mise à jour');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Erreur lors de la mise à jour de la feuille');
+    }
 });
 
 //ouvrir une feuille
@@ -75,15 +94,16 @@ server.get('/sheet/:id', authenticate, async (req, res) => {
 
 //supprimer une feuille
 server.delete('/sheet/:id', authenticate, async (req, res) => {
-    await Sheet.findByIdAndDelete(req.params.id);
-    res.status(204).send('Feuille supprimée');});
+    try {
 
-/*
-server.get('/sheet/load', authenticate, async (req, res) => {
-    const sheets = await Sheet.find().populate('owner', 'username');
-    res.json(sheets);
+        await Sheet.findByIdAndDelete(req.params.id);
+        res.status(204).send('Feuille supprimée');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Erreur lors de la suppression de la feuille');
+    }
 });
-*/
+
 
 server.use((req, res) => {
     res.status(404).send('Page introuvable');

@@ -20,17 +20,19 @@
         <thead>
         <tr>
             <th></th>
-            <% for (let col = 0; col < 26; col++) { %>
+            <% for (let col = 0; col < 10; col++) { %>
                 <th><%= String.fromCharCode(65 + col) %></th>
             <% } %>
         </tr>
         </thead>
         <tbody>
-        <% for (let row = 1; row <= 50; row++) { %>
+        <% for (let row = 0; row < 10; row++) { %>
             <tr>
-                <th><%= row %></th>
+                <th><%= row + 1 %></th>
                 <% for (let col = 0; col < 26; col++) { %>
-                    <td contenteditable="true"></td>
+                    <td contenteditable="true">
+                        <%= sheet.data && sheet.data[row] && sheet.data[row][col] ? sheet.data[row][col] : '' %>
+                    </td>
                 <% } %>
             </tr>
         <% } %>
@@ -52,11 +54,11 @@
             data.push(rowData);
         }
         fetch('/sheet/save', {
-            method: 'POST',
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ data })
+            body: JSON.stringify({sheetId: '<%= sheet._id %>', data: data})
         })
             .then(response => response.text())
             .then(data => {
@@ -64,5 +66,7 @@
             });
     });
 </script>
+</body>
+</html>
 </body>
 </html>
