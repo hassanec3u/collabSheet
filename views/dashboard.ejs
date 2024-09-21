@@ -17,6 +17,7 @@
                 <li class="list-group-item d-flex justify-content-between align-items-center sheet-item" data-id="<%= sheet._id %>">
                     <button class="btn btn-link mr-3 sheet-name" data-id="<%= sheet._id %>"><%= sheet.name %></button>
                     <div>
+                        <button class="btn btn-warning editSheet">Modifier</button>
                         <button class="btn btn-danger deleteSheet">Supprimer</button>
                     </div>
                 </li>
@@ -26,6 +27,30 @@
         <% } %>
     </ul>
 </div>
+
+
+<!-- Modal for editing sheet name -->
+<div class="modal fade" id="editSheetModal" tabindex="-1" role="dialog" aria-labelledby="editSheetModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editSheetModalLabel">Modifier le nom de la feuille</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="form-control" id="newSheetName" placeholder="Nouveau nom de la feuille">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="saveSheetName">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -59,11 +84,42 @@
                 if (response.ok) {
                     sheetItem.remove();
                     console.log('Feuille supprimée');
-                    location.reload()
+                    location.reload();
                 } else {
                     console.error('Erreur lors de la suppression de la feuille');
                 }
             });
+        });
+    });
+
+    document.querySelectorAll('.editSheet').forEach(button => {
+        button.addEventListener('click', (event) => {
+            event.stopPropagation();
+            const sheetItem = event.currentTarget.closest('.sheet-item');
+            const sheetId = sheetItem.getAttribute('data-id');
+            const sheetName = sheetItem.querySelector('.sheet-name').innerText;
+
+            document.getElementById('newSheetName').value = sheetName;
+            $('#editSheetModal').modal('show');
+
+            document.getElementById('saveSheetName').onclick = () => {
+                const newSheetName = document.getElementById('newSheetName').value;
+
+                fetch(`/sheet/${sheetId}/name`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({name: newSheetName})
+                }).then(response => {
+                    if (response.ok) {
+                        $('#editSheetModal').modal('hide');
+                        location.reload();
+                    } else {
+                        console.error('Erreur lors de la modification du nom de la feuille');
+                    }
+                });
+            };
         });
     });
 </script>

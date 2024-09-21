@@ -105,6 +105,23 @@ server.delete('/sheet/:id', authenticate, async (req, res) => {
 });
 
 
+// Route to update sheet name
+server.put('/sheet/:id/name', authenticate, async (req, res) => {
+    try {
+        const sheetId = req.params.id;
+        const newName = req.body.name;
+        const sheet = await Sheet.findByIdAndUpdate(sheetId, {name: newName}, {new: true});
+        if (!sheet) {
+            return res.status(404).send('Feuille introuvable');
+        }
+        return res.status(200).send('Nom de la feuille mis à jour');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Erreur lors de la mise à jour du nom de la feuille');
+    }
+});
+
+
 server.use((req, res) => {
     res.status(404).send('Page introuvable');
 });
