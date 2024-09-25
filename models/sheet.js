@@ -7,7 +7,7 @@ const sheetSchema = new Schema({
         required: true
     },
     data: {
-        type: Array,
+        type: [[Schema.Types.Mixed]], // Enforces a 2D array
         required: true
     },
     owner: {

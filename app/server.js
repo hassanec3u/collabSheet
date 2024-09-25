@@ -43,6 +43,7 @@ server.get('/', (req, res) => {
 // Middleware pour gérer l'authentification
 server.use(authenticate);
 
+
 server.get('/dashboard', authenticate, async (req, res) => {
     try {
         const sheets = await Sheet.find({owner: req.user.username});
@@ -70,12 +71,27 @@ server.post('/sheet', authenticate, async (req, res) => {
 // sauvegarder une feuille
 server.put('/sheet/:id', authenticate, async (req, res) => {
     try {
-        const sheetId = req.body.sheetId;
-        const data = req.body.data;
-        const sheet = await Sheet.findByIdAndUpdate(sheetId, {data}, {new: true});
+        const { sheetId, data: newData } = req.body;
+        const sheet = await Sheet.findById(sheetId);
+
         if (!sheet) {
             return res.status(404).send('Feuille introuvable');
         }
+
+        const rows = newData[0];
+        const cols = newData[1];
+        const newCellValue = newData[2];
+
+
+        //Verifie si la ligne existe
+        if (!sheet.data[rows]) {
+            sheet.data[rows] = [];
+        }
+
+
+        sheet.data[rows][cols] = newCellValue;
+
+        await sheet.save();
         return res.status(200).send('Feuille mise à jour');
     } catch (error) {
         console.error(error);

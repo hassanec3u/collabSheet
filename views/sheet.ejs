@@ -15,7 +15,6 @@
 <%- include('partials/navbar') %>
 <div class="container-fluid mt-5">
     <h1>Feuille de Calcul</h1>
-    <button class="btn btn-primary mb-3" id="saveSheet">Enregistrer la feuille</button>
     <table class="table table-bordered">
         <thead>
         <tr>
@@ -42,27 +41,23 @@
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
 <script>
-    document.getElementById('saveSheet').addEventListener('click', () => {
-        const table = document.querySelector('table');
-        const data = [];
-        for (let row = 1; row < table.rows.length; row++) {
-            const rowData = [];
-            for (let col = 1; col < table.rows[row].cells.length; col++) {
-                rowData.push(table.rows[row].cells[col].innerText);
-            }
-            data.push(rowData);
-        }
+    document.querySelector('table').addEventListener('input', (event) => {
+        const cell = event.target;
+        const row = cell.parentElement.rowIndex - 1;
+        const col = cell.cellIndex - 1;
+        const cellValue = cell.innerText;
         fetch('/sheet/save', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({sheetId: '<%= sheet._id %>', data: data})
+            body: JSON.stringify({sheetId: '<%= sheet._id %>', data: [row, col, cellValue]})
         })
             .then(response => response.text())
             .then(data => {
-                alert(data);
+                console.log(data);
             });
     });
 </script>
