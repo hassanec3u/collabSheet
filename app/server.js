@@ -68,10 +68,58 @@ server.post('/sheet', authenticate, async (req, res) => {
     }
 });
 
+// Récupérer les collaborateurs d'une feuille
+server.get('/sheet/:id/collaborators', authenticate, async (req, res) => {
+    try {
+        const sheet = await Sheet.findById(req.params.id);
+        if (!sheet) {
+            return res.status(404).send('Feuille introuvable');
+        }
+
+        //get collaborators array from the sheet
+        const collaborators = sheet.collaborators;
+        res.status(200).send(collaborators);
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Erreur lors de la récupération des collaborateurs');
+    }
+});
+
+//ajouter un collaborateur
+server.post('/sheet/:id/collaborator', authenticate, async (req, res) => {
+    try {
+        const sheetId = req.params.id;
+        const collaboratorUsername = req.body.collaboratorName;
+        const sheet = await Sheet.findById(sheetId);
+        if (!sheet) {
+            return res.status(404).send('Feuille introuvable');
+        }
+        const collaborator = await User.findOne({username: collaboratorUsername});
+        if (!collaborator) {
+            console.log('Collaborateur introuvable');
+            return res.status(404).send('Collaborateur introuvable');
+        }
+
+        if (sheet.collaborators.includes(collaboratorUsername)) {
+            console.log('Collaborateur déjà ajouté');
+            return res.status(400).send('Collaborateur déjà ajouté');
+
+        }
+
+        sheet.collaborators.push(collaboratorUsername);
+        await sheet.save();
+
+        res.status(200).send('Collaborateur ajouté');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Erreur lors de l\'ajout du collaborateur');
+    }
+});
+
 // sauvegarder une feuille
 server.put('/sheet/:id', authenticate, async (req, res) => {
     try {
-        const { sheetId, data: newData } = req.body;
+        const {sheetId, data: newData} = req.body;
         const sheet = await Sheet.findById(sheetId);
 
         if (!sheet) {

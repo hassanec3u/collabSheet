@@ -6,6 +6,11 @@ const sheetSchema = new Schema({
         type: String,
         required: true
     },
+    collaborators: [{
+        type: String,
+        ref: 'User',
+        default: []
+    }],
     data: {
         type: [[Schema.Types.Mixed]], // Enforces a 2D array
         required: true

@@ -17,7 +17,8 @@
                 <li class="list-group-item d-flex justify-content-between align-items-center sheet-item" data-id="<%= sheet._id %>">
                     <button class="btn btn-link mr-3 sheet-name" data-id="<%= sheet._id %>"><%= sheet.name %></button>
                     <div>
-                        <button class="btn btn-warning editSheet">Modifier</button>
+                        <button class="btn btn-warning editSheet">Editer</button>
+                        <button class="btn btn-primary shareSheet">Partager</button>
                         <button class="btn btn-danger deleteSheet">Supprimer</button>
                     </div>
                 </li>
@@ -50,6 +51,28 @@
     </div>
 </div>
 
+<!-- Modal for add collaborator to the sheet  -->
+<div class="modal fade" id="shareSheetModal" tabindex="-1" role="dialog" aria-labelledby="shareSheetModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shareSheetModalLabel">Partager la feuille</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="email" class="form-control" id="collaboratorName" placeholder="Nom du collaborateur">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="addCollaborator">Ajouter</button>
+            </div>
+        </div>
+    </div>
+
+
+
 
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
@@ -71,6 +94,35 @@
             window.location.href = `/sheet/${sheetId}`;
         });
     });
+
+    document.querySelector('.shareSheet').addEventListener('click', (event) => {
+        event.stopPropagation();
+        const sheetItem = event.currentTarget.closest('.sheet-item');
+        const sheetId = sheetItem.getAttribute('data-id');
+
+        $('#shareSheetModal').modal('show');
+        
+        document.getElementById('addCollaborator').onclick = () => {
+            const collaboratorName = document.getElementById('collaboratorName').value;
+
+            fetch(`/sheet/${sheetId}/collaborator`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({collaboratorName: collaboratorName})
+            }).then(response => {
+                if (response.ok) {
+                    $('#shareSheetModal').modal('hide');
+                    location.reload();
+                } else {
+                    console.error('Erreur lors de l\'ajout du collaborateur');
+                }
+            });
+        };
+
+    });
+
 
     document.querySelectorAll('.deleteSheet').forEach(button => {
         button.addEventListener('click', (event) => {

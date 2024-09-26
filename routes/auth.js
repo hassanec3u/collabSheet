@@ -81,7 +81,7 @@ router.post('/login', async (req, res) => {
         return res.status(401).render('login', {errorMessage: 'Paire login/mot de passe incorrecte'});
     }
 
-    const token = jwt.sign({username: user.username}, 'RANDOM_TOKEN_SECRET', {expiresIn: '1h'});
+    const token = jwt.sign({username: user.username}, 'RANDOM_TOKEN_SECRET', {expiresIn: '12h'});
 
     res.cookie('jwt', token, {
         httpOnly: true,
