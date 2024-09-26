@@ -11,9 +11,10 @@
 <div class="container-fluid mt-5">
     <h1>Tableau de bord</h1>
     <button class="btn btn-primary mb-3" id="createSheet">Créer une nouvelle feuille</button>
+    <h2>Vos Feuilles</h2>
     <ul class="list-group" id="sheetsList">
-        <% if (sheets && sheets.length > 0) { %>
-            <% sheets.forEach(sheet => { %>
+        <% if (ownedSheets && ownedSheets.length > 0) { %>
+            <% ownedSheets.forEach(sheet => { %>
                 <li class="list-group-item d-flex justify-content-between align-items-center sheet-item" data-id="<%= sheet._id %>">
                     <button class="btn btn-link mr-3 sheet-name" data-id="<%= sheet._id %>"><%= sheet.name %></button>
                     <div>
@@ -27,8 +28,21 @@
             <li class="list-group-item">Aucune feuille disponible</li>
         <% } %>
     </ul>
-</div>
 
+    <h2>Feuilles partagés</h2>
+    <ul class="list-group" id="collaboratedSheetsList">
+        <% if (collaboratedSheets && collaboratedSheets.length > 0) { %>
+            <% collaboratedSheets.forEach(sheet => { %>
+                <li class="list-group-item d-flex justify-content-between align-items-center sheet-item" data-id="<%= sheet._id %>">
+                    <button class="btn btn-link mr-3 sheet-name" data-id="<%= sheet._id %>"><%= sheet.name %></button>
+                    <span>Propriétaire: <%= sheet.owner %></span>
+                </li>
+            <% }) %>
+        <% } else { %>
+            <li class="list-group-item">Aucune feuille disponible</li>
+        <% } %>
+    </ul>
+</div>
 
 <!-- Modal for editing sheet name -->
 <div class="modal fade" id="editSheetModal" tabindex="-1" role="dialog" aria-labelledby="editSheetModalLabel" aria-hidden="true">

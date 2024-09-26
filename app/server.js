@@ -44,16 +44,6 @@ server.get('/', (req, res) => {
 server.use(authenticate);
 
 
-server.get('/dashboard', authenticate, async (req, res) => {
-    try {
-        const sheets = await Sheet.find({owner: req.user.username});
-        res.render('dashboard', {authenticated: true, sheets});
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Erreur lors de la récupération des feuilles');
-    }
-});
-
 // Créer une feuille
 server.post('/sheet', authenticate, async (req, res) => {
     try {
@@ -65,6 +55,24 @@ server.post('/sheet', authenticate, async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).send('Erreur lors de la création de la feuille');
+    }
+});
+
+server.get('/dashboard', authenticate, async (req, res) => {
+    try {
+        const ownedSheets = await Sheet.find({ owner: req.user.username });
+        const collaboratedSheets = await Sheet.find({ collaborators: req.user.username });
+
+        console.log(collaboratedSheets)
+
+        res.render('dashboard', {
+            authenticated: true,
+            ownedSheets,
+            collaboratedSheets
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Erreur lors de la récupération des feuilles');
     }
 });
 
