@@ -41,7 +41,8 @@
 </div>
 
 <!-- Modal for view sheet collaborator -->
-<div class="modal fade" id="viewCollaboratorsModal" tabindex="-1" role="dialog" aria-labelledby="viewCollaboratorsModalLabel" aria-hidden="true">
+<div class="modal fade" id="viewCollaboratorsModal" tabindex="-1" role="dialog"
+     aria-labelledby="viewCollaboratorsModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -62,27 +63,46 @@
     </div>
 </div>
 
+<script src="/socket.io/socket.io.js"></script>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
 <script>
+
+    const socket = io({
+        query: {username: '<%= username %>'}
+    });
+
+    // Recevoir les mises à jour des autres clients
+    socket.on('updateCell', (data) => {
+        const {row, col, cellValue} = data;
+        console.log('Mise à jour reçue:', data);
+        UpdateTable(row, col, cellValue);
+    });
+
+    function UpdateTable(row, col, cellValue) {
+        const table = document.querySelector('table');
+        table.rows[row + 1].cells[col + 1].innerText = cellValue;
+    }
+
     document.querySelector('table').addEventListener('input', (event) => {
         const cell = event.target;
         const row = cell.parentElement.rowIndex - 1;
         const col = cell.cellIndex - 1;
         const cellValue = cell.innerText;
+
+        // Envoyer les mises à jour aux autres clients
+        socket.emit('cellUpdate', {row, col, cellValue});
+
         fetch('/sheet/save', {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({sheetId: '<%= sheet._id %>', data: [row, col, cellValue]})
-        })
-            .then(response => response.text())
-            .then(data => {
-                console.log(data);
-            });
+        }).catch(error => {
+            console.error('Error saving cell value or sending updates:', error);
+        });
     });
 
     document.getElementById('view-collaborators').addEventListener('click', () => {

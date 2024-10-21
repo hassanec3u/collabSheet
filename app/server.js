@@ -5,7 +5,12 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const Sheet = require('../models/sheet');
 const User = require('../models/user');
+const http = require('http');
+const SocketIO = require('socket.io');
 const server = express();
+const httpServer = http.createServer(server);
+const io = SocketIO(httpServer);
+
 
 // Import the mongoose configuration
 require('../config/mongoose');
@@ -40,8 +45,38 @@ server.get('/', (req, res) => {
     }
 });
 
+let clients = [];
+
 // Middleware pour gérer l'authentification
 server.use(authenticate);
+
+io.on('connection', (socket) => {
+    const username = socket.handshake.query.username;
+    console.log(`Client ${username} connecté`);
+
+    clients.push({ user: username, socket });
+
+    // Lorsque le client envoie une mise à jour
+    socket.on('cellUpdate', (data) => {
+        const { row, col, cellValue } = data;
+
+        // Diffuser la mise à jour à tous les autres clients sauf celui qui a envoyé
+        clients.forEach(client => {
+            if (client.socket !== socket) {
+                client.socket.emit('updateCell', { row, col, cellValue });
+            }
+        });
+
+        // Log du serveur pour voir ce qui se passe
+       // console.log(`Mise à jour de ${username}: [${row}, ${col}] = ${cellValue}`);
+    });
+
+    // Gérer la déconnexion
+    socket.on('disconnect', () => {
+        console.log(`Client ${username} déconnecté`);
+        clients = clients.filter(client => client.socket !== socket);
+    });
+});
 
 
 // Créer une feuille
@@ -60,10 +95,8 @@ server.post('/sheet', authenticate, async (req, res) => {
 
 server.get('/dashboard', authenticate, async (req, res) => {
     try {
-        const ownedSheets = await Sheet.find({ owner: req.user.username });
-        const collaboratedSheets = await Sheet.find({ collaborators: req.user.username });
-
-        console.log(collaboratedSheets)
+        const ownedSheets = await Sheet.find({owner: req.user.username});
+        const collaboratedSheets = await Sheet.find({collaborators: req.user.username});
 
         res.render('dashboard', {
             authenticated: true,
@@ -158,10 +191,11 @@ server.put('/sheet/:id', authenticate, async (req, res) => {
 //ouvrir une feuille
 server.get('/sheet/:id', authenticate, async (req, res) => {
     const sheet = await Sheet.findById(req.params.id);
+    const username = req.user.username;
     if (!sheet) {
         return res.status(404).send('Feuille introuvable');
     }
-    res.render('sheet', {authenticated: true, sheet});
+    res.render('sheet', {authenticated: true, sheet, username});
 });
 
 //supprimer une feuille
@@ -199,6 +233,6 @@ server.use((req, res) => {
 });
 
 // Démarrer le serveur
-server.listen(3000, () => {
+httpServer.listen(3000, () => {
     console.log('Server is running on http://localhost:3000');
 });
